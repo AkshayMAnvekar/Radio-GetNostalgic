@@ -3,7 +3,7 @@ Web Radio using Liquidsoap and NodeJS ( only backend )
 # Features:
 - Dedicate or Request Song with or without a message
 - Swagger (OpenAPI: 3.0.0) API Documentation. go to route /api-doc
--
+- Realtime updates of next current & next track information
 
 # Pre-requisites 
 - Icecast2 - streaming server
