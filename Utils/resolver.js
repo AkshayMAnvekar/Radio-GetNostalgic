@@ -31,7 +31,7 @@ function resolveTrackname(track_name){
             track_name = track_name.substring(0, hypenIndex)
         }
         
-        track_name = track_name.trim().replace(/\_/g, "")
+        track_name = track_name.trim().replace(/\_/g, " ")
         return track_name
     }catch(err){
         console.log('resolveTrackname Err : ',err)

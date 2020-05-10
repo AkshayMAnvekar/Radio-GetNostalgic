@@ -37,7 +37,7 @@ async function executeCommand(cmd, cb){
 
 async function tempExecuteCommand(cmd, cb){
     try{
-        let data = await HttpsService.get(`${config.SERVER_URL}/execute?cmd=${encodeURIComponent(cmd)}`)
+        let data = await HttpsService.get(`https://radio.getnostalgic.com:8081/execute?cmd=${encodeURIComponent(cmd)}`)
         // console.log(typeof data)
         data = JSON.parse(data)
         cb(null, data.data)
@@ -48,7 +48,8 @@ async function tempExecuteCommand(cmd, cb){
 
 function promisifyExecuteCommand(cmd){
     return new Promise((resolve, reject)=>{
-        tempExecuteCommand(cmd, (err, data)=>{
+        let func = os.platform() === 'win32' ? tempExecuteCommand : executeCommand
+        func(cmd, (err, data)=>{
             if(err){
                 reject(err)
             }else{
@@ -67,5 +68,5 @@ function promisifyExecuteCommand(cmd){
 // })
 
 module.exports = {
-    executeCommand: os.platform() === 'win32' ? promisifyExecuteCommand : executeCommand
+    executeCommand: promisifyExecuteCommand
 }

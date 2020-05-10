@@ -1,11 +1,12 @@
 const fs = require("fs")
 const p = require("path")
 
+const config = require("./config")
 const { Resolver } = require("./Utils")
 const { DatabaseService } = require("./Components")
 let db = DatabaseService.conPromise
 
-let path = "E:/Songs/Tamil Songs";
+let path = config.TRACKS_PATH;
 let list = [];
 
 async function insertSong(obj){

@@ -52,9 +52,9 @@ const app = Express();
 
 var http = require('http').createServer(app);
 
-app.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/api/doc", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.get("/swagger.json", (req, res)=>{
+app.get("/api/swagger.json", (req, res)=>{
     res.json(swaggerDocs);    
 })
 
