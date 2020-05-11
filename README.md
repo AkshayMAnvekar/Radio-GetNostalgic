@@ -21,4 +21,4 @@ Web Radio using Liquidsoap and NodeJS ( only backend )
 
 # Project Notes
 - Socket-IO used
-- for API doc go to /api-doc
+- for API doc go to /api/doc

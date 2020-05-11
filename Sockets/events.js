@@ -42,19 +42,5 @@ console.log("EVENTS IMPORTED")
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 content:
- *                   type: string
- *                   minLength: 0
- *                   maxLength: 200
- *                   example: A sentence of about 200 characters Max 
- *                 name:
- *                   type: string
- *                   minLength: 0
- *                   maxLength: 50
- *                   example: your Name
- *                 isDedicated:
- *                   type: boolean
- *                   example: false
+ *               $ref: '#/components/schemas/TrackMsg'
  */

@@ -38,10 +38,11 @@ async function getTrackMessageFromTrackPath(track_path){
     try{
         let sql =  `select dl_id, dedicator_message, dedicator_name from tracks as t
                     inner join dedicatelist as dl on t.track_id=dl.track_id
-                    left join dedicatemessage as dm on dl.dl_id=dm.dmsg_id
-                    where t.track_path="${track_path}" and dl.aired_status=false
+                    left join dedicatemessage as dm on dl.dl_id=dm.dedicatelist_id
+                    where t.track_path=? and dl.aired_status=false
                     order by dl.timestamp desc limit 1`;
-        let result = await db.get(sql)
+        let params = [track_path]
+        let result = await db.get(sql, params)
         return result
     }catch(err){
         console.log('getTrackMessageFromTrackPath Err : ',err)

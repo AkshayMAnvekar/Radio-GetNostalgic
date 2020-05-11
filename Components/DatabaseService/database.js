@@ -27,7 +27,7 @@ function initDB(is_new_db) {
             db.run("create table dedicatelist(dl_id integer primary key autoincrement, track_id integer, aired_status boolean default false, liq_id integer, timestamp integer not null, created_on DATE default (datetime('now','localtime')), foreign key(track_id) references tracks(track_id) on update cascade on delete cascade)");
 
             // create table dedicatemessage
-            db.run("create table dedicatemessage(dmsg_id integer primary key autoincrement, dedicatelist_id integer, dedicator_message varchar not null, dedicator_name varchar not null,timestamp integer not null, created_on DATE default (datetime('now','localtime')), foreign key(dedicatelist_id) references dedicatelist(dl_id) on update cascade on delete cascade)");
+            db.run("create table dedicatemessage(dmsg_id integer primary key autoincrement, dedicatelist_id integer, dedicator_message varchar not null, dedicator_name varchar not null, created_on DATE default (datetime('now','localtime')), foreign key(dedicatelist_id) references dedicatelist(dl_id) on update cascade on delete cascade)");
         })
     }
 }

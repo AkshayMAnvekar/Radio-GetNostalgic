@@ -17,23 +17,17 @@ async function create(track_id, liq_id){
     }
 }
 
-async function checkTrackWithInLastHour(track_id){
+async function getTrackInfoWithTrackID(track_id){
     try{
         if(!track_id){
             throw("Track ID not present")
         }
         
-        let current = new Date().getTime()
-        let pastHour = current - 3600000
-        let sql = `select * from dedicatelist as dl
-                   left join tracks as t on dl.track_id=t.track_id
-                   where dl.track_id = ${track_id} and dl.timestamp >= ${pastHour}`;
+        let sql = `select * from tracks as t
+                   left join dedicatelist as dl on t.track_id=dl.track_id
+                   where t.track_id = ${track_id}`;
         let result = await db.get(sql);
-        if(!result.length > 0){
-            return { status: true }
-        }
-        let { track_path, track_title } = result[0]
-        return { status:false, track_path, track_title }
+        return result
     }catch(err){
         console.log('checkTack Err : ',err)
         throw(err);
@@ -42,6 +36,7 @@ async function checkTrackWithInLastHour(track_id){
 
 async function updateAiredStatus(dl_id){
     try{
+        console.log("updating aired status for dl_id : ", dl_id)
         let sql = `update dedicatelist set aired_status=true where dl_id=${dl_id}`
         db.run(sql)
     }catch(err){
@@ -52,6 +47,6 @@ async function updateAiredStatus(dl_id){
 
 module.exports = {
     create,
-    checkTrackWithInLastHour,
+    getTrackInfoWithTrackID,
     updateAiredStatus
 }

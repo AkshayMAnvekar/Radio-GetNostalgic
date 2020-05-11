@@ -45,13 +45,17 @@ const { Track } = require("../../BusinessLogic")
  *                   $ref: '#/components/schemas/TrackMax' 
  *                 nextTrackInfo:
  *                   $ref: '#/components/schemas/TrackMin'
+ *                 currentTrackMessage:
+ *                   $ref: '#/components/schemas/TrackMsg'
  *                 currentTrackRemainingInMilli:
  *                   type: integer
  *                   example: 123456
  */
 router.get("/current",async (req, res)=>{    
     try{
-        if(CURRENT_TRACK_INFO.currentTrackInfo){
+        console.log({ CURRENT_TRACK_INFO })
+        if(CURRENT_TRACK_INFO.currentTrackRemainingInMilli){
+            // to speccifiy not to refresh CURRENT_TRACK_INFO
             await Track.getAndSetCurrentTrackInfo(false);
         }else{
             await Track.getAndSetCurrentTrackInfo();

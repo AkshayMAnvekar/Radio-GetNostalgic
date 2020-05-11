@@ -52,8 +52,9 @@ const app = Express();
 
 var http = require('http').createServer(app);
 
+app.use(Express.urlencoded({ extended: true }))
+app.use(Express.json())
 app.use("/api/doc", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
 app.get("/api/swagger.json", (req, res)=>{
     res.json(swaggerDocs);    
 })
@@ -102,6 +103,25 @@ http.listen(3000, () => {
  *        title:
  *          type: string
  *          example: Vande Mataram
+ *    TrackMsg:
+ *      type: object
+ *      properties:
+ *        content:
+ *          type: string
+ *          minLength: 0
+ *          maxLength: 200
+ *          example: A sentence of about 200 characters Max 
+ *        name:
+ *          type: string
+ *          minLength: 0
+ *          maxLength: 50
+ *          example: Sender Name
+ *        displayTime:
+ *          type: integer
+ *          example: 5000
+ *        isDedicated:
+ *          type: boolean
+ *          example: false
  *    TrackList: 
  *      type: object
  *      properties:

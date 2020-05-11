@@ -17,7 +17,7 @@ class Database{
 
         // emmited when sql statement is executed
         this.con.on('profile', (sql, execution_time) => {
-            // console.log("Profile ---- sql : ", sql, " exectime : ", execution_time);
+            console.log("Profile ---- sql : ", sql, " exectime : ", execution_time);
         })
     }
         

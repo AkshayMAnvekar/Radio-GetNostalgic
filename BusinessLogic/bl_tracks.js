@@ -1,34 +1,7 @@
 const { LiqCon, Resolver } = require("../Utils")
 const { DA_Track, DA_DedicateList } = require("../DataAccess")
 
-async function getCurrentTrackId(){
-    let current_track_liq_id;
-    try{
-        let onAir = await LiqCon.executeCommand('request.on_air')
-
-        let ids = Resolver.resolveIdsStr(onAir[0])
-        console.log(ids)
-        // if(ids[0] == 0 && ids.length == 1){
-        //     console.log("0 && length 1 = 0")
-        //     current_track_liq_id = 0
-        // }else 
-        if(ids[0] == 0 && ids.length != 1){
-            console.log("0 && length > 1 = second")
-            current_track_liq_id = ids[1]
-        }else{
-            console.log(" ids [0] ")
-            current_track_liq_id = ids[0]            
-        }
-        
-        return current_track_liq_id
-
-    }catch(err){
-        console.log("getCurrentTrackId Err : ", err)
-        throw(err)
-    }
-}
-
-async function emitMessageForCurrentTrack(track_path){
+async function getMessageForCurrentTrack(track_path){
     try{
         let message = undefined
         
@@ -37,19 +10,23 @@ async function emitMessageForCurrentTrack(track_path){
         }
 
         let result = await DA_Track.getTrackMessageFromTrackPath(track_path)            
-
-        if( result.length > 0 && !result[0].dedicator_message == null){
-            message.content = result[0].dedicator_message
-            message.name = result[0].dedicator_name
-            message.isDedicated = true
-        }
-        if(message){
-            io.sockets.emit('message', message)
+        console.log("trackMsg : ", result)
+        if( result.length > 0 && result[0].dedicator_message !== null){
+            // uncomment below line updating dedicate_list to specify that song has been played
+            DA_DedicateList.updateAiredStatus(result[0].dl_id)
+            
+            // creating obj to emit and store in CURRENT_TRACK_INFO
+            message = {
+                content: result[0].dedicator_message,
+                name: result[0].dedicator_name,
+                displayTime: 20000,
+                isDedicated: true
+            }
         }
         
         return message
     }catch(err){
-        console.log('emitMessage Err : ',err)
+        console.log('getMessageForCurrentTrack Err : ',err)
         throw(err);
     }
 }
@@ -57,6 +34,7 @@ async function emitMessageForCurrentTrack(track_path){
 async function getAndSetCurrentTrackInfo(computeAll=true){
     try{    
         console.log({ computeAll })
+        let messageInfo = undefined;
         let { lastTrackInfo, currentTrackInfo, nextTrackInfo, currentTrackRemainingInMilli, currentTrackMessage  } = CURRENT_TRACK_INFO
         if(computeAll){
             let obj = await getCurrentTrackInfo()
@@ -64,13 +42,13 @@ async function getAndSetCurrentTrackInfo(computeAll=true){
             // getting all info for previous, current, next track
             lastTrackInfo = obj.lastTrackInfo
             currentTrackInfo = obj.currentTrackInfo
-            nextTrackInfo = await getNextTrack()
+            nextTrackInfo = { title: await getNextTrack() }
             currentTrackRemainingInMilli = await getCurrentTrackRemainingTimeInMilliSeconds()
 
-            // emit messages for the respective song
-            currentTrackMessage = await emitMessageForCurrentTrack(currentTrackInfo.path)
-
-            DA_DedicateList.updateAiredStatus(currentTrackInfo.path)
+            // get messages for the respective song
+            console.log(currentTrackInfo.path)            
+            currentTrackMessage = await getMessageForCurrentTrack(currentTrackInfo.path)
+            console.log({currentTrackMessage})
 
             currentTrackInfo.path = undefined        
             
@@ -88,6 +66,7 @@ async function getAndSetCurrentTrackInfo(computeAll=true){
         currentTrackRemainingInMilli = await getCurrentTrackRemainingTimeInMilliSeconds()
         
         CURRENT_TRACK_INFO = { lastTrackInfo, currentTrackInfo, nextTrackInfo, currentTrackRemainingInMilli  }    
+        console.log({ CURRENT_TRACK_INFO })
     }catch(err){
         console.log('getAndSetCurrentTrackInfo Err : ',err)
         throw(err);
@@ -99,7 +78,7 @@ async function getTrackInfoById(track_liq_id){
         let trackInfo = await LiqCon.executeCommand(`request.metadata ${track_liq_id}`)
         let obj = Resolver.resolveTrackInfo(trackInfo)
         obj = {
-            title: Resolver.resolveTrackname(obj.title),
+            title: Resolver.resolveName(obj.title),
             album: obj.album,
             year: obj.year ? obj.year : obj.date,
             composer: obj.composer,
@@ -119,20 +98,24 @@ async function getCurrentTrackInfo(){
         let lastTrackEndIndex = allInfo.indexOf("--- 1 ---");
         let lastTrack = Resolver.resolveTrackInfo(allInfo.slice(lastTrackStartIndex+1, lastTrackEndIndex))
         let currentTrack = Resolver.resolveTrackInfo(allInfo.slice(lastTrackEndIndex+1))
+
+        let lastTrackPath = lastTrack.initial_uri ? lastTrack.initial_uri : lastTrack.filename
         let lastTrackInfo = {
-            title: Resolver.resolveTrackname(lastTrack.title),
-            album: lastTrack.album,
+            title: Resolver.resolveTrackNameFromTrackPath(lastTrack.filename),
+            album: Resolver.resolveName(lastTrack.album),
             year: lastTrack.year ? lastTrack.year : lastTrack.date,
-            composer: lastTrack.composer,
-            artist: lastTrack.artist            
+            composer: Resolver.resolveName(lastTrack.composer),
+            artist: Resolver.resolveName(lastTrack.artist)
         }
+        
+        let currentTrackPath = currentTrack.initial_uri ? currentTrack.initial_uri : currentTrack.filename
         let currentTrackInfo = {
-            title: Resolver.resolveTrackname(currentTrack.title),
-            album: currentTrack.album,
+            title: Resolver.resolveTrackNameFromTrackPath(currentTrack.filename),
+            album: Resolver.resolveName(currentTrack.album),
             year: currentTrack.year ? currentTrack.year : currentTrack.date,
-            composer: currentTrack.composer,
-            artist: currentTrack.artist,
-            path: currentTrack.initial_uri
+            composer: Resolver.resolveName(currentTrack.composer),
+            artist: Resolver.resolveName(currentTrack.artist),
+            path: currentTrack.initial_uri ? currentTrack.initial_uri : currentTrack.filename
         }
         return { lastTrackInfo, currentTrackInfo }
     }catch(err){
@@ -148,14 +131,20 @@ async function getNextTrack(){
         let next;
         if(count){
             /** when user_playlist is empty */
-            next = await LiqCon.executeCommand("tamil.next") // ["[palying]", "", ""]
-            console.log(next)
-            next = Resolver.resolveTrackNameFromTrackPath(next[1])
-            next = { title: Resolver.resolveTrackname(next) }
+            next = await LiqCon.executeCommand("tamil.next") // ["[palying / ready]", "", ""]
+
+            if(next[0] && next[0].includes("[ready]")){
+                // next song may be in jingles or user_playlist handle that
+                console.log("next track in ready state ")
+                let temp = next[0].replace("[ready]", "").trim()
+                next = Resolver.resolveTrackNameFromTrackPath(temp)
+            }else{
+                next = Resolver.resolveTrackNameFromTrackPath(next[1])
+            }            
         }else{
             /** when user_playlist is not empty */
-            let ids = await LiqCon.executeCommand("user_playlist.secondary_queue")
-            ids = Resolver.resolveIdsStr(ids)
+            let ids = await LiqCon.executeCommand("user_playlist.secondary_queue")            
+            ids = Resolver.resolveIdsStr(ids[0])
 
             next = await getTrackInfoById(ids[0])            
         }
@@ -198,7 +187,6 @@ async function getTrack(offset, limit){
 }
 
 module.exports = {
-    getCurrentTrackId,
     getAndSetCurrentTrackInfo,
     getTrackInfoById,
     getCurrentTrackInfo,

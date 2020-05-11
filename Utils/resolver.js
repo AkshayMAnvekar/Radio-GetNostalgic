@@ -18,8 +18,11 @@ function resolveTrackInfo(infos){
     }
 }
 
-function resolveTrackname(track_name){
+function resolveName(track_name){
     try{
+        if(!track_name){
+            return undefined
+        }
         let hypenIndex = track_name.lastIndexOf("-");
         if(hypenIndex !== -1 && hypenIndex < 7){
             // then it is from the starting point
@@ -34,7 +37,7 @@ function resolveTrackname(track_name){
         track_name = track_name.trim().replace(/\_/g, " ")
         return track_name
     }catch(err){
-        console.log('resolveTrackname Err : ',err)
+        console.log('resolveName Err : ',err)
         throw(err);
     }
 }
@@ -49,26 +52,27 @@ function resolveTrackNameFromTrackPath(trackUri){
         trackUri = trackUri.substring(startIndex, trackUri.length)
 
         // to remove hyphen and insert space instead of _
-        trackUri = resolveTrackname(trackUri)
+        trackUri = resolveName(trackUri)
         return trackUri
     }catch(err){
-        console.log("resolveTrackName Err : ", err)
+        console.log("resolveTrackNameFromTrackPath Err : ", err)
         throw(err)
     }
 }
 
 function resolveIdsStr(idsString){
+    console.log({idsString})
     idsString = idsString.replace(/\r/g, "").replace(/\n/g, "")
     return idsString.trim().split(" ")
 }
 
 // UNIT TESTS
 // console.log(resolveIds('"3 0"'))
-// console.log(resolveTrackName("/media/usb/music/tamil/Idhazhin_Oram-VmusiQ.Com.mp3"))
+// console.log(resolveName("/media/usb/music/tamil/Idhazhin_Oram-VmusiQ.Com.mp3"))
 
 module.exports = {
     resolveTrackInfo,
     resolveIdsStr,
-    resolveTrackname,
+    resolveName,
     resolveTrackNameFromTrackPath
 }

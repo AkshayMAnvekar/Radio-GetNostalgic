@@ -1,6 +1,6 @@
 const router = require("express")()
 
-const { DedicateList } = require('../../BusinessLogic') 
+const { Track, DedicateList } = require('../../BusinessLogic') 
 
 /**
  * @swagger
@@ -14,27 +14,29 @@ const { DedicateList } = require('../../BusinessLogic')
  *     produces:
  *       - application/json
  *     parameters:
- *     - in: "body"
- *       name: "body"
- *       type: object
- *       properties:
- *         track_id:
- *           type: integer
- *           example: 1197
- *           required: true
- *         message:
- *           type: object
- *           properties:
- *             content:
- *               type: string
- *               minLength: 0
- *               maxLength: 200
- *               example: A sentence of about 200 characters Max 
- *             name:
- *               type: string
- *               minLength: 0
- *               maxLength: 50
- *               example: your Name
+ *     - in: body
+ *       name: body
+ *       schema:
+ *         type: object
+ *         required:
+ *           - track_id
+ *         properties:
+ *           track_id:
+ *             type: integer
+ *             example: 5
+ *           message:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 minLength: 0
+ *                 maxLength: 200
+ *                 example: A sentence of about 200 characters Max 
+ *               name:
+ *                 type: string
+ *                 minLength: 0
+ *                 maxLength: 50
+ *                 example: Sender Name
  *     responses:
  *       400:
  *         description: Invalid input error
@@ -63,8 +65,9 @@ const { DedicateList } = require('../../BusinessLogic')
  *                   example: 24
  */
 router.post('/track', async (req, res)=>{
-    let track_id = request.body.track_id
-    let message = request.body.message
+    console.log(req.body)
+    let track_id = req.body.track_id
+    let message = req.body.message
     try{
         if(!track_id || isNaN(track_id)){
             res.status(400).json({ error: "Track ID is must and should be a number"})
@@ -90,6 +93,7 @@ router.post('/track', async (req, res)=>{
         let { dl_id, msg_id } = await DedicateList.addTrack({track_id, track_path}, message)
 
         res.status(200).json({ dl_id, msg_id })
+        Track.getAndSetCurrentTrackInfo()
     }catch(err){
         res.status(500).json({ error:'Internal Server Error', actualErr: err })
     }
@@ -104,28 +108,25 @@ router.post('/track', async (req, res)=>{
  *     summary: Send message without dedication track
  *     consumes:
  *       - application/json 
- *     produces:
- *       - application/json
  *     parameters:
  *     - in: "body"
  *       name: "body"
- *       type: object
- *       properties:
- *         message:
- *           type: object
- *           properties:
- *             content:
- *               type: string
- *               required: true
- *               minLength: 0
- *               maxLength: 200
- *               example: A sentence of about 200 characters Max 
- *             name:
- *               type: string
- *               required: true
- *               minLength: 0
- *               maxLength: 50
- *               example: your Name
+ *       schema:
+ *         type: object
+ *         required:
+ *           - content
+ *           - name
+ *         properties:
+ *           content:
+ *             type: string
+ *             minLength: 0
+ *             maxLength: 200
+ *             example: A sentence of about 200 characters Max
+ *           name:
+ *             type: string
+ *             minLength: 0
+ *             maxLength : 50
+ *             example: Sender Name
  *     responses:
  *       400:
  *         description: Invalid input error
@@ -151,17 +152,16 @@ router.post('/track', async (req, res)=>{
  *                   example: Posted Successfully
  */
 router.post('/message', async (req, res)=>{
-    let message = req.body.message
+    let message = req.body
     try{
-        if(message && message.content){
-            if(!(message.content && message.name)){
-                res.status(400).json({ error: "Message sender name and content both must present" })
-                return
-            }
+        if(!(message && message.content && message.name)){
+            res.status(400).json({ error: "Message sender name and content both must present" })
+            return
         }
 
+        message.displayTime = 5000
         message.isDedicated = false
-
+        console.log({message})
         io.sockets.emit('message', message)
 
         res.status(200).json({ msg: "Posted Successfully" })
