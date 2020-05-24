@@ -18,7 +18,7 @@ jingles = playlist(mode='randomize', reload=3600, reload_mode="watch", "/path/to
 rotation = rotate(weights=[1,10],[jingles,tracks])
 
 # radio
-radio = fallback(track_sensitive = false, [user_list, rotation, safe])
+radio = fallback(track_sensitive = true, [user_list, rotation, safe])
 
 
 output.icecast(

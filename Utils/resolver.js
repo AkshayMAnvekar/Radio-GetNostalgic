@@ -48,7 +48,7 @@ function resolveTrackNameFromTrackPath(trackUri){
         let startIndex = trackUri.lastIndexOf("/");
         // console.log({ trackUri, startIndex })
         startIndex = startIndex == -1 ? 0 : startIndex +1
-        trackUri = trackUri.replace(/\.mp3/, "")
+        trackUri = trackUri.replace(/\.mp3/, "").replace(/\.MP3/, "")
         trackUri = trackUri.substring(startIndex, trackUri.length)
 
         // to remove hyphen and insert space instead of _

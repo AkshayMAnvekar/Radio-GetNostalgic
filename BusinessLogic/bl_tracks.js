@@ -94,8 +94,13 @@ async function getTrackInfoById(track_liq_id){
 async function getCurrentTrackInfo(){
     try{
         let allInfo = await LiqCon.executeCommand('GetNostalgic_Radio.metadata')        
-        let lastTrackStartIndex = allInfo.indexOf("--- 2 ---");
-        let lastTrackEndIndex = allInfo.indexOf("--- 1 ---");
+        let lastTrackStartIndex = allInfo.indexOf("--- 2 ---")
+        let lastTrackEndIndex = allInfo.indexOf("--- 1 ---")        
+        while(lastTrackStartIndex == -1 || lastTrackEndIndex == -1){
+            allInfo = await LiqCon.executeCommand('GetNostalgic_Radio.metadata')        
+            lastTrackStartIndex = allInfo.indexOf("--- 2 ---")
+            lastTrackEndIndex = allInfo.indexOf("--- 1 ---")
+        }  
         let lastTrack = Resolver.resolveTrackInfo(allInfo.slice(lastTrackStartIndex+1, lastTrackEndIndex))
         let currentTrack = Resolver.resolveTrackInfo(allInfo.slice(lastTrackEndIndex+1))
 
