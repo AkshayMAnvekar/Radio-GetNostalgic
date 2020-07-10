@@ -65,7 +65,7 @@ async function getAndSetCurrentTrackInfo(computeAll=true){
 
         currentTrackRemainingInMilli = await getCurrentTrackRemainingTimeInMilliSeconds()
         
-        CURRENT_TRACK_INFO = { lastTrackInfo, currentTrackInfo, nextTrackInfo, currentTrackRemainingInMilli  }    
+        CURRENT_TRACK_INFO = { lastTrackInfo, currentTrackInfo, nextTrackInfo, currentTrackRemainingInMilli, currentTrackMessage  }    
         console.log({ CURRENT_TRACK_INFO })
     }catch(err){
         console.log('getAndSetCurrentTrackInfo Err : ',err)
@@ -191,6 +191,16 @@ async function getTrack(offset, limit){
     }
 }
 
+async function getTrackFilePathFromId(id){
+    try{
+        let result = await DA_Track.getTrackById(id)
+        return result
+    }catch(err){
+        console.log("getTrackFilePathFromId Err : ", err)
+        throw(err)
+    }
+}
+
 module.exports = {
     getAndSetCurrentTrackInfo,
     getTrackInfoById,
@@ -198,5 +208,6 @@ module.exports = {
     getNextTrack,
     getCurrentTrackRemainingTimeInMilliSeconds,
     searchTrack,
-    getTrack
+    getTrack,
+    getTrackFilePathFromId
 }

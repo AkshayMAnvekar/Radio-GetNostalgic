@@ -209,12 +209,29 @@ router.get("/list", async (req, res)=>{
             res.status(400).json({ error: "limit should be a number" })
             return
         }
+        offset = parseInt(offset)
+        limit = parseInt(limit)
         let result = await Track.getTrack(offset, limit)
-        res.status(200).json({tracks: result, limit, offset})
+        res.status(200).json({tracks: result, limit, offset: offset+limit})
     }catch(err){
         res.status(500).json({ error: err })
     }
 
+})
+
+router.get("/:id", async (req, res)=>{
+    let id = req.params.id
+    try{
+        id = parseInt(id)
+        let result = await Track.getTrackFilePathFromId(id);
+        if(!result.length > 0){
+            res.status(404).json({ error: "File Not found" })
+            return
+        }
+        res.sendFile(result[0].track_path)
+    }catch(err){
+        res.status(500).json({ error: err })
+    }
 })
 
 module.exports = router

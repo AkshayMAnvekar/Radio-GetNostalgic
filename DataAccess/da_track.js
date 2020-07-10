@@ -34,6 +34,18 @@ async function getTrack(offset, limit){
     }
 }
 
+async function getTrackById(id){
+    try{
+        let sql = `select track_title, track_path from tracks where track_id=?`;
+        let result = await db.get(sql, id)
+
+        return result
+    }catch(err){
+        console.log("DA getTrackById Err : ", err)
+        return Error(err)
+    }
+}
+
 async function getTrackMessageFromTrackPath(track_path){
     try{
         let sql =  `select dl_id, dedicator_message, dedicator_name from tracks as t
@@ -53,5 +65,6 @@ async function getTrackMessageFromTrackPath(track_path){
 module.exports = {
     searchTrack,
     getTrack,
-    getTrackMessageFromTrackPath
+    getTrackMessageFromTrackPath,
+    getTrackById
 }
